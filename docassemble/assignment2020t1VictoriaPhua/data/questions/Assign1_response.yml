@@ -1,0 +1,200 @@
+# ASSIGNMENT 1
+# You will be implementing the Legal Aid Bureau's interview to determine
+# whether an applicant is eligible for legal aid. 
+# The total score that can be awarded for this assignment is 20.
+# The reference interview is found here:
+# https://guided.page/interview?i=docassemble.playground3%3Alab.yml#page1
+# Resources are found here:
+# https://lab.mlaw.gov.sg/legal-services/taking-the-means-test/
+# https://sso.agc.gov.sg/SL/LAAA1995-RG1#Sc1-
+---
+# MODIFY THIS BLOCK
+# Please fill in the relevant information.
+metadata:
+  title: |
+    Eligbility for Legal Aid
+  short title: |
+    Legal Aid Means Test
+  description: |
+    This is an interview to determine whether an applicant is eligible for legal aid
+  authors:
+    - name: Victoria Phua Rui
+      organization: COR-LAW-2215 Digital Intelligence for Lawyers
+  revision_date: 2020-09-22
+---
+# DO NOT MODIFY THIS BLOCK. SCORE: 5
+# Implement a check_nric function in a module file called validation.py.
+# It should check for (1) correct format and (2) that it is a valid NRIC.
+# Use a regular expression to test for the correct format.
+# Implement the checksum algorithm to determine whether the NRIC is valid.
+# The NRIC checksum algorithm can be found on:
+# http://www.ngiam.net/NRIC/ or Wikipedia
+# Test your function using data from: https://samliew.com/nric-generator
+modules:
+  .validation
+---
+# DO NOT MODIFY THIS BLOCK
+# This is your objects block.
+# Individual is used for the applicant.
+# DAList is used for household_incomes.
+objects:
+  applicant: Individual
+  household_members: DAList.using(object_type=Individual, there_is_another=False)
+---
+# MODIFY THIS BLOCK (BUT DO NOT MOVE IT). SCORE: 5
+# Use this block to control the interview logic.
+# Include this line somewhere in your code: 
+#   household_members.append(applicant)
+# This line of code adds the applicant to the household_members DAList.
+# This ensures that the applicant appears in the household_members.table.
+mandatory: True
+code: |
+  if owned_property: 
+    if not owned_one_property:
+      ineligible_screen      
+    else:
+      if not reside_in_property:
+       ineligible_screen
+    if property_value > 13000:
+      ineligible_screen
+  if applicant.age_in_years() < 60 and applicant.savings_investments > 10000:
+    ineligible_screen
+  if applicant.age_in_years() >= 60 and applicant.savings_investments > 40000:
+    ineligible_screen
+  applicant.name.first
+  applicant.name.last
+  applicant.nric 
+  applicant.income    
+  applicant.address.street
+  applicant.address.apartment
+  applicant.address.postcode
+  applicant.address.country
+  household_members.append(applicant)
+---
+# DO NOT MODIFY THIS BLOCK OR MOVE IT
+mandatory: True
+code: |
+  if household_members.there_are_any:
+    review_household_members
+---
+# MODIFY THIS BLOCK (BUT DO NOT MOVE IT). SCORE: 5
+# Use this block to write code that calculates the average PCHI
+mandatory: True
+code: |
+  total_income = 0
+  for x in range(0,len(household_members)):
+    total_income = total_income + household_members[x].income
+  #this test avoids division error when the user deletes all household members from the table.
+  if len(household_members) >=1: 
+    PCHI = total_income / (len(household_members)*12)
+    if PCHI > 950: 
+      ineligible_screen
+    else:
+      eligible_screen
+  else:
+     ineligible_screen
+---
+# DO NOT MODIFY THIS BLOCK
+table: household_members.table
+rows: household_members
+columns: 
+  - Name: row_item
+  - Birthdate: row_item.birthdate
+  - Income: row_item.income
+edit:
+  - name.first
+---
+# DO NOT MODIFY THIS BLOCK
+question: | 
+  Please add all other household members.
+subquestion: |
+  A household member is any person residing with you and related by:
+  
+  1. blood
+  2. marriage; or
+  3. adoption.
+  
+  Press continue when you have added all household members.
+  
+  ${household_members.table}
+  ${household_members.add_action() }
+  
+field: review_household_members
+---
+# DO NOT MODIFY THIS BLOCK
+question: |
+  Information about your ${ordinal(i)} household member:
+fields:
+  - First Name: household_members[i].name.first
+  - Last Name: household_members[i].name.last
+  - Birthdate: household_members[i].birthdate
+    datatype: date
+  - "This person's total income in past 12 months": household_members[i].income
+    datatype: currency
+    min: 0
+    default: 0
+---
+# IMPLEMENT ALL YOUR QUESTION BLOCKS.
+# Implement all the question blocks correctly. Score 3
+# Improving the usability / user experience. Score 2
+question: |
+  Do you own any property?
+fields:
+  - no label: owned_property
+    datatype: yesnoradio
+---
+question: |
+  Property Information
+fields:
+  - 'Do you own more than one property?': owned_one_property
+    datatype: noyesradio
+  - 'Do you currently reside in this property?': reside_in_property
+    datatype: yesnoradio
+    show if: owned_one_property
+  - 'What is the annual value of your residential property?': property_value
+    datatype: currency
+    min: 0
+    show if: reside_in_property
+---
+question: |
+  Savings Information
+fields:
+  - 'Enter your birth date': applicant.birthdate
+    datatype: date
+  - 'How much total savings and investments do you have?': applicant.savings_investments
+    datatype: currency
+    min: 0
+---
+question: |
+  Please enter your information
+fields:
+  - 'First Name': applicant.name.first
+  - 'Last Name': applicant.name.last
+  - 'NRIC': applicant.nric
+    validate: check_nric
+  - 'Your total income in past 12 months': applicant.income    
+    datatype: currency
+    min: 0
+  - 'Street Number and Name': applicant.address.street
+  - 'Apartment Unit': applicant.address.apartment
+    required: False
+  - 'Postcode': applicant.address.postcode
+  - 'Country': applicant.address.country
+    code: |
+      countries_list()
+---
+question: |
+  You do not qualify for Legal Aid.
+buttons:
+  - Exit: exit
+  - Restart: restart
+mandatory: True
+event: ineligible_screen
+---
+question: |
+  You qualify for Legal Aid.
+buttons:
+  - Exit: exit
+  - Restart: restart
+mandatory: True
+event: eligible_screen
