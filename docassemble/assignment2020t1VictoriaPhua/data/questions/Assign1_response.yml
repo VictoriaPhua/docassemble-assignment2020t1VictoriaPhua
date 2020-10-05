@@ -1,6 +1,6 @@
 # ASSIGNMENT 1
 # You will be implementing the Legal Aid Bureau's interview to determine
-# whether an applicant is eligible for legal aid. 
+# whether an applicant is eligible for legal aid.
 # The total score that can be awarded for this assignment is 20.
 # The reference interview is found here:
 # https://guided.page/interview?i=docassemble.playground3%3Alab.yml#page1
@@ -20,7 +20,7 @@ metadata:
   authors:
     - name: Victoria Phua Rui
       organization: COR-LAW-2215 Digital Intelligence for Lawyers
-  revision_date: 2020-09-22
+  revision_date: 2020-10-5
 ---
 # DO NOT MODIFY THIS BLOCK. SCORE: 5
 # Implement a check_nric function in a module file called validation.py.
@@ -43,15 +43,15 @@ objects:
 ---
 # MODIFY THIS BLOCK (BUT DO NOT MOVE IT). SCORE: 5
 # Use this block to control the interview logic.
-# Include this line somewhere in your code: 
+# Include this line somewhere in your code:
 #   household_members.append(applicant)
 # This line of code adds the applicant to the household_members DAList.
 # This ensures that the applicant appears in the household_members.table.
 mandatory: True
 code: |
-  if owned_property: 
+  if owned_property:
     if not owned_one_property:
-      ineligible_screen      
+      ineligible_screen
     else:
       if not reside_in_property:
        ineligible_screen
@@ -63,8 +63,8 @@ code: |
     ineligible_screen
   applicant.name.first
   applicant.name.last
-  applicant.nric 
-  applicant.income    
+  applicant.nric
+  applicant.income
   applicant.address.street
   applicant.address.apartment
   applicant.address.postcode
@@ -85,9 +85,9 @@ code: |
   for x in range(0,len(household_members)):
     total_income = total_income + household_members[x].income
   #this test avoids division error when the user deletes all household members from the table.
-  if len(household_members) >=1: 
+  if len(household_members) >=1:
     PCHI = total_income / (len(household_members)*12)
-    if PCHI > 950: 
+    if PCHI > 950:
       ineligible_screen
     else:
       eligible_screen
@@ -97,7 +97,7 @@ code: |
 # DO NOT MODIFY THIS BLOCK
 table: household_members.table
 rows: household_members
-columns: 
+columns:
   - Name: row_item
   - Birthdate: row_item.birthdate
   - Income: row_item.income
@@ -105,20 +105,20 @@ edit:
   - name.first
 ---
 # DO NOT MODIFY THIS BLOCK
-question: | 
+question: |
   Please add all other household members.
 subquestion: |
   A household member is any person residing with you and related by:
-  
+
   1. blood
   2. marriage; or
   3. adoption.
-  
+
   Press continue when you have added all household members.
-  
+
   ${household_members.table}
   ${household_members.add_action() }
-  
+
 field: review_household_members
 ---
 # DO NOT MODIFY THIS BLOCK
@@ -172,7 +172,7 @@ fields:
   - 'Last Name': applicant.name.last
   - 'NRIC': applicant.nric
     validate: check_nric
-  - 'Your total income in past 12 months': applicant.income    
+  - 'Your total income in past 12 months': applicant.income
     datatype: currency
     min: 0
   - 'Street Number and Name': applicant.address.street
